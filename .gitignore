@@ -1,0 +1,8 @@
+.ipynb_checkpoints/
+.vscode/
+DownloadVideo.ipynb
+__pycache__
+*.css
+*.download
+*.png
+*.pyc
