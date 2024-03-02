@@ -6,3 +6,4 @@ __pycache__
 *.download
 *.png
 *.pyc
+src/coursera/config.json
