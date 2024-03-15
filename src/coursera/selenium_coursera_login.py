@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from getpass import getpass
 import time
+import re
 
 TARGET_LINK = "https://www.coursera.org/learn/risk-management-empathy-data/home/week/4"
 
@@ -29,7 +30,17 @@ try:
 except:
     pass
 
-driver.get('https://www.coursera.org/learn/risk-management-empathy-data/home/week/1')
+TARGET_LINK = "https://www.coursera.org/learn/risk-management-empathy-data/home/week/1"
+
+# Extract the root webpage address
+match = re.search(r'https://www\..+?/', TARGET_LINK)
+if match is not None:
+    root_webpage_address = match.group(0)
+    print(f"Root webpage address: {root_webpage_address}")
+else:
+    print("No root webpage address found in TARGET_LINK")
+    
+driver.get(TARGET_LINK)
 getpass("wait for operations")
 
 lesson_sessions = driver.find_elements(By.CLASS_NAME, 'rc-ModuleLessons')
@@ -43,3 +54,10 @@ if len(lesson_sessions) > 0:
         href = [link for link in href if 'quiz' not in link]
 
         print(href)
+
+        for link in href:
+            driver.get(root_webpage_address[:-1] + link)
+            time.sleep(2)
+            getpass("wait for operations")
+
+driver.se
