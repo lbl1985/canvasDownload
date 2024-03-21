@@ -4,15 +4,23 @@ from selenium.webdriver.edge.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
+
 import time
+import pyperclip
+
 
 
 WEB_PAGE = "https://www.coursera.org/learn/marketing-digital/home/week/1"
 
+class Utility:
+    def get_video_name(self, name:str):
+        return name.split('\n')[0]
+
 class CourseraDownloader:
     def __init__(self):
         self.opt = Options()
-        
+        self.utility = Utility()
+        self.video_name = ""
 
     def open_page(self, webpage: str):
         # driver_path = "~/Downloads/edgedriver_mac64_m1/msedgedriver"  # Replace with the actual path to your Microsoft Edge WebDriver executable
@@ -32,6 +40,7 @@ class CourseraDownloader:
             videos = [li for li in lis if ('Video' in li.text)]
             for index_video in range(len(videos)):
                 video = videos[index_video]
+                self.video_name = self.utility.get_video_name(video.text)
                 video.click()
                 time.sleep(3)
 
@@ -45,31 +54,45 @@ class CourseraDownloader:
 
                 download_button = download_buttons[0]
                 download_button.click()
+                time.sleep(0.2)
 
-                tags = self.driver.find_elements(By.TAG_NAME, "ul")
-                download_list = [tag for tag in tags if ('Video' in tag.text)] # find the download button
-                self.process_download(download_list[-1])
+                self.process_download()
 
                 self.driver.back()
                 break
 
         return;
 
-    def process_download(self, download_list):
-        download_list.click()
-        download_items = download_list.find_elements(By.TAG_NAME, "li")
+    def get_download_items(self):
+        tags = self.driver.find_elements(By.TAG_NAME, "ul")
+        download_list = [tag for tag in tags if ('Video' in tag.text)] # find the download button
+        download_ul = download_list[-1]
+        download_ul.click()
+        time.sleep(0.2)
+        return download_ul.find_elements(By.TAG_NAME, "li")
+
+    def process_download(self):
+        download_items = self.get_download_items()
         for index in range(len(download_items)):
+            download_items = self.get_download_items()
             download_item = download_items[index]
-            self.download(download_item) # download the video operations
-            break
+            if 'mp4' in download_item.text:
+                self.video_name = self.video_name + '_' + download_item.text
+                pyperclip.copy(self.video_name)
+                self.download(download_item) # download the video operations
+            index = index + 1
         return;
 
     def download(self, obj):
         obj.click()
-        sleep(3)
+        time.sleep(3)
         self.driver.switch_to.window(self.driver.window_handles[1])
         video = self.driver.find_element(By.TAG_NAME, "video")
-        self.action.context_click(video).send_keys(Keys.ARROW_DOWN).send_keys(Keys.ARROW_DOWN).send_keys(Keys.ARROW_DOWN).send_keys(Keys.ARROW_DOWN).perform()
+        _ = input("Please press enter once finish downloading the video")
+        self.driver.close()
+        self.driver.switch_to.window(self.driver.window_handles[0])
+        time.sleep(0.2)
+        # self.action.context_click(video).send_keys(Keys.ARROW_DOWN).send_keys(Keys.ARROW_DOWN).send_keys(Keys.ARROW_DOWN).send_keys(Keys.ARROW_DOWN).perform()
         return;
 
 
