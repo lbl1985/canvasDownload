@@ -5,13 +5,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 
-import time
+import time, os
 import pyperclip
 
 
 
 # WEB_PAGE = "https://www.coursera.org/learn/marketing-digital/home/week/2"
-WEB_PAGE = "https://www.coursera.org/learn/business-statistics/home/"
+WEB_PAGE = "https://www.coursera.org/learn/business-statistics/home/week/1"
 
 class Utility:
     def get_video_name(self, name:str):
@@ -22,14 +22,40 @@ class CourseraDownloader:
         self.opt = Options()
         self.utility = Utility()
         self.video_name = ""
+        self.default_saving_path = "/Users/lbl1985/Downloads/"
+        self.video_list = []
+        self.index_file_name = ""
+        self.webpage = ""
 
     def open_page(self, webpage: str):
         # driver_path = "~/Downloads/edgedriver_mac64_m1/msedgedriver"  # Replace with the actual path to your Microsoft Edge WebDriver executable
         # service = Service(driver_path)
         # driver = webdriver.Edge(service=service, options=self.opt)
         self.driver = webdriver.Edge(options = self.opt)
-        self.driver.get(webpage)
+        self.webpage = webpage
+        self.driver.get(self.webpage)
         self.action = ActionChains(self.driver)
+
+    def get_course_name(self):
+        items = self.driver.find_elements(By.CSS_SELECTOR, "h2.css-6ecy9b")
+        if len(items) == 1:
+            return items[0].text
+        else:
+            items = self.webpage.split("/")
+            index = items.index("learn")
+            return items[index + 1]
+
+    def get_week_number(self):
+        items = self.webpage.split("/")
+        return items[-1]
+
+    def initial_index_file(self):
+        self.index_file_name = os.path.join(self.default_saving_path, self.get_course_name() + ".md")
+        with open(self.index_file_name, "a") as f:
+            course_name = self.get_course_name()
+            week_number = self.get_week_number()
+            f.write(f"# {course_name} Week {week_number}\n")
+
 
     def get_content_in_week(self):
         uls = self.driver.find_elements(By.TAG_NAME, "ul")
@@ -42,6 +68,9 @@ class CourseraDownloader:
         return [li for li in lis if ('Video' in li.text)]
 
     def process(self): 
+        # Initial the index .md file
+        self.initial_index_file()
+
         uls = self.driver.find_elements(By.TAG_NAME, "ul")
         weeks = [ul for ul in uls if ('Course Material' in ul.text)]
         contents = self.get_content_in_week()
