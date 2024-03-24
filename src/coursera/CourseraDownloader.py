@@ -26,7 +26,7 @@ class CourseraDownloader:
         self.video_list = []
         self.index_file_name = ""
         self.webpage = ""
-
+        self.buttons_text = []
     def open_page(self, webpage: str):
         # driver_path = "~/Downloads/edgedriver_mac64_m1/msedgedriver"  # Replace with the actual path to your Microsoft Edge WebDriver executable
         # service = Service(driver_path)
@@ -35,6 +35,7 @@ class CourseraDownloader:
         self.webpage = webpage
         self.driver.get(self.webpage)
         self.action = ActionChains(self.driver)
+
 
     def get_course_name(self):
         items = self.driver.find_elements(By.CSS_SELECTOR, "h2.css-6ecy9b")
@@ -67,9 +68,22 @@ class CourseraDownloader:
         lis = ul.find_elements(By.TAG_NAME, "li")
         return [li for li in lis if ('Video' in li.text)]
 
+    def get_reading_and_video_content_in_week(self):
+        uls = self.driver.find_elements(By.TAG_NAME, "ul")
+        return [ul for ul in uls if ('Duration' in ul.text or 'Reading' in ul.text)]
+
+    def get_butons_text(self):
+        buttons = self.driver.find_elements(By.TAG_NAME, "button")
+        self.buttons_text =  [button.text for button in buttons if len(button.text) > 0]
+
     def process(self): 
         # Initial the index .md file
         self.initial_index_file()
+
+        uls = self.get_reading_and_video_content_in_week()
+
+        for ul in uls:
+            pass
 
         uls = self.driver.find_elements(By.TAG_NAME, "ul")
         weeks = [ul for ul in uls if ('Course Material' in ul.text)]
