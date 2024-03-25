@@ -70,15 +70,33 @@ class CourseraDownloader:
 
     def get_reading_and_video_content_in_week(self):
         uls = self.driver.find_elements(By.TAG_NAME, "ul")
-        return [ul for ul in uls if ('Duration' in ul.text or 'Reading' in ul.text)]
+        uls = [ul for ul in uls if ('Duration' in ul.text or 'Reading' in ul.text)]
+        # Skip the uls not related to class. 
+        uls_text = [ul.text for ul in uls]
+        index = 0
+        for index in range(len(uls_text)):
+            if uls_text[index].startswith('Module'):
+                break
+        return uls[index:-1]
 
-    def get_butons_text(self):
+    def set_buttons_text(self):
         buttons = self.driver.find_elements(By.TAG_NAME, "button")
         self.buttons_text =  [button.text for button in buttons if len(button.text) > 0]
+
+    def get_matching_button_index(self, text: str):
+        # the text are coming from ul's text in format of:
+        #  Module 1 Overview\nReading...
+        #  1-1.1 Formulating the Hypothesis...
+        # The buttons's text are in format of: 
+        #  Module 1 Information
+        #  Lesson 1-1: Formulating the Hypothesis\
+        # The Expected output is get the mapping button's text.
+        pass
 
     def process(self): 
         # Initial the index .md file
         self.initial_index_file()
+        self.set_buttons_text()
 
         uls = self.get_reading_and_video_content_in_week()
 

@@ -2,6 +2,7 @@ import unittest
 
 testmodules = [
     'get_video_download_link_test',
+    'CourseraDownloaderUtil_test'
     ]
 
 suite = unittest.TestSuite()
