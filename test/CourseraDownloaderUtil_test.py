@@ -26,7 +26,7 @@ class UtilTest(unittest.TestCase):
             'Lesson 1-3: Two-Tail Test for Mean\nComplete',
             'Lesson 1-4: One-Tail Test for Mean\nComplete',
             'Lesson 1-5: Testing the Proportion\nComplete',
-            #'Module 1 Graded Activities\nComplete'
+            # 'Module 1 Graded Activities\nComplete'
         ]
         self.uls_text = [
             #'Welcome to Inferential and Predictive Statistics for Business!\nVideo•\n. Duration: 5 minutes\n5 min\nGet started\n. Click to get started\nSyllabus\nReading•\n. Duration: 10 minutes\n10 min\nePub\nReading•\n. Duration: 10 minutes\n10 min\nAbout the Discussion Forums\nReading•\n. Duration: 4 minutes\n4 min\nGlossary\nReading•\n. Duration: 15 minutes\n15 min\nOrientation Quiz\nPractice Quiz•5 questions',
@@ -57,6 +57,8 @@ class UtilTest(unittest.TestCase):
             for text in self.buttons_text:
                 ratio = self.util.similar(test, text)
                 arr.append(ratio)
-                # print(f'{test} to {text} is {ratio}') 
-            print(arr)
+            # print(arr)
+            max_index = arr.index(max(arr))
+            h1_text = self.buttons_text[max_index].split('\n')[0]
+            print(f"{test} ===> {h1_text}")
             arr = []
