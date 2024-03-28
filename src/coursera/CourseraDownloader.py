@@ -74,14 +74,15 @@ class CourseraDownloader:
         # Skip the uls not related to class. 
         uls_text = [ul.text for ul in uls]
         index = 0
-        for index in range(len(uls_text)):
+        while index < len(uls_text):
             if uls_text[index].startswith('Module'):
                 break
-        return uls[index:-1]
+            index += 1
+        return uls_text[index:]
 
     def set_buttons_text(self):
         buttons = self.driver.find_elements(By.TAG_NAME, "button")
-        self.buttons_text =  [button.text for button in buttons if len(button.text) > 0]
+        self.buttons_text =  [button.text.split('\n')[0] for button in buttons if len(button.text) > 0 and not ('Grade' in button.text)]
 
     def get_matching_button_index(self, text: str):
         # the text are coming from ul's text in format of:
