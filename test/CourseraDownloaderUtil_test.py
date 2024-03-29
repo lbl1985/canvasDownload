@@ -60,13 +60,7 @@ class UtilTest(unittest.TestCase):
 
 
         for test in self.uls_text:
-            test = test.split('\n')[0]
-            for text in self.buttons_text:
-                ratio = self.util.similar(test, text)
-                arr.append(ratio)
-            # print(arr)
-            max_index = arr.index(max(arr))
-            h1_text = self.buttons_text[max_index].split('\n')[0]
+            h1_text = self.util.find_header(test, self.buttons_text)
             if test == "Module 1 Overview": 
                 self.assertEqual(h1_text, "Module 1 Information")
             elif test == "1-1.1. Formulating the Hypothesis":

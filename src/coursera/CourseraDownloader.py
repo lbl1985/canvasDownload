@@ -7,11 +7,16 @@ from selenium.webdriver import ActionChains
 
 import time, os
 import pyperclip
+import CourseraDownloaderUtil
 
 
 
 # WEB_PAGE = "https://www.coursera.org/learn/marketing-digital/home/week/2"
 WEB_PAGE = "https://www.coursera.org/learn/business-statistics/home/week/1"
+# WEB_PAGE = "file://" + os.path.abspath(os.path.join(os.path.abspath(__file__), '..', '..', '..', 'test', 'data', 'courseraWeekPage.html'))
+
+PROCESS_READ = "Reading"
+PROCESS_VIDEO = "Video"
 
 class Utility:
     def get_video_name(self, name:str):
@@ -22,11 +27,15 @@ class CourseraDownloader:
         self.opt = Options()
         self.utility = Utility()
         self.video_name = ""
-        self.default_saving_path = "/Users/lbl1985/Downloads/"
+        self.default_saving_path = "./Downloads/"
         self.video_list = []
         self.index_file_name = ""
         self.webpage = ""
         self.buttons_text = []
+        self.util = CourseraDownloaderUtil.CourseraDownloaderUtil()
+        if os.path.exists(self.default_saving_path) == False:
+            os.mkdir(self.default_saving_path)
+
     def open_page(self, webpage: str):
         # driver_path = "~/Downloads/edgedriver_mac64_m1/msedgedriver"  # Replace with the actual path to your Microsoft Edge WebDriver executable
         # service = Service(driver_path)
@@ -70,7 +79,7 @@ class CourseraDownloader:
 
     def get_reading_and_video_content_in_week(self):
         uls = self.driver.find_elements(By.TAG_NAME, "ul")
-        uls = [ul for ul in uls if ('Duration' in ul.text or 'Reading' in ul.text)]
+        uls = [ul for ul in uls if (PROCESS_VIDEO in ul.text or PROCESS_READ in ul.text)]
         # Skip the uls not related to class. 
         uls_text = [ul.text for ul in uls]
         index = 0
@@ -78,21 +87,70 @@ class CourseraDownloader:
             if uls_text[index].startswith('Module'):
                 break
             index += 1
-        return uls_text[index:]
+        return uls[index:]
 
     def set_buttons_text(self):
         buttons = self.driver.find_elements(By.TAG_NAME, "button")
         self.buttons_text =  [button.text.split('\n')[0] for button in buttons if len(button.text) > 0 and not ('Grade' in button.text)]
 
-    def get_matching_button_index(self, text: str):
-        # the text are coming from ul's text in format of:
-        #  Module 1 Overview\nReading...
-        #  1-1.1 Formulating the Hypothesis...
-        # The buttons's text are in format of: 
-        #  Module 1 Information
-        #  Lesson 1-1: Formulating the Hypothesis\
-        # The Expected output is get the mapping button's text.
-        pass
+    def get_lis(self, ul):
+        lis = ul.find_elements(By.TAG_NAME, "li")
+        return [li for li in lis if ('Video' in li.text or 'Reading' in li.text)]
+    
+    def process_li_read(self):
+        viewer = self.driver.find_elements(By.CSS_SELECTOR, "div.css-1kgqbsw")
+        if len(viewer) == 1:
+            content = viewer[0].text
+            if len(content) > 0:
+                with open(self.index_file_name, "a") as f:
+                    f.write(f"{content}\n")
+
+    def process_li_video(self):
+        buttons = self.driver.find_elements(By.TAG_NAME, "button")
+        download_buttons =[button for button in buttons if button.text == "Downloads"]
+
+        while len(download_buttons) == 0:
+            buttons = self.driver.find_elements(By.TAG_NAME, "button")
+            download_buttons =[button for button in buttons if button.text == "Downloads"]
+            time.sleep(2)
+
+        download_button = download_buttons[0]
+        download_button.click()
+        time.sleep(0.2)
+
+        self.process_download()
+
+        self.driver.back()
+        time.sleep(0.2)
+
+    def process_ul(self, ul_index: int):
+        uls = self.get_reading_and_video_content_in_week()
+        ul = uls[ul_index]
+        lis = ul.find_elements(By.TAG_NAME, "li")
+        index = 0
+        process_type = ""
+        for index in range(len(lis)):
+            uls = self.get_reading_and_video_content_in_week()
+            ul = uls[ul_index]
+
+            lis = ul.find_elements(By.TAG_NAME, "li")
+            li = lis[index]
+            process_type = PROCESS_READ if PROCESS_READ in li.text else PROCESS_VIDEO
+            
+            li_text = li.text.split('\n')[0]
+            with open(self.index_file_name, "a") as f:
+                f.write(f"#### {li_text}\n")
+
+            li.click()
+            time.sleep(0.5)
+
+            if process_type == PROCESS_READ:
+                self.process_li_read()
+            else:
+                self.process_li_video()
+
+            self.driver.back()
+            time.sleep(0.5)
 
     def process(self): 
         # Initial the index .md file
@@ -100,9 +158,20 @@ class CourseraDownloader:
         self.set_buttons_text()
 
         uls = self.get_reading_and_video_content_in_week()
-
-        for ul in uls:
-            pass
+        current_header = ""
+        index = 0
+        while index < len(uls):
+            uls = self.get_reading_and_video_content_in_week()
+            ul = uls[index]
+            ul_text = ul.text.split('\n')[0]
+            header = self.util.find_header(ul_text, self.buttons_text)
+            if header != current_header:
+                with open(self.index_file_name, "a") as f:
+                    f.write(f"## {header}\n")
+                    f.write(f"### {ul_text}\n")
+            current_header = header
+            self.process_ul(index)
+            index = index + 1
 
         uls = self.driver.find_elements(By.TAG_NAME, "ul")
         weeks = [ul for ul in uls if ('Course Material' in ul.text)]
@@ -162,15 +231,17 @@ class CourseraDownloader:
         time.sleep(3)
         self.driver.switch_to.window(self.driver.window_handles[1])
         video = self.driver.find_element(By.TAG_NAME, "video")
+        self.action.context_click(video)
+        time.sleep(0.5)
+        for i in range(4):
+            self.action.send_keys(Keys.ARROW_DOWN).perform()
+            time.sleep(0.2)
+        self.action.send_keys(Keys.RETURN).perform()
         _ = input("Please press enter once finish downloading the video")
         self.driver.close()
         self.driver.switch_to.window(self.driver.window_handles[0])
         time.sleep(0.2)
-        # self.action.context_click(video).send_keys(Keys.ARROW_DOWN).send_keys(Keys.ARROW_DOWN).send_keys(Keys.ARROW_DOWN).send_keys(Keys.ARROW_DOWN).perform()
         return;
-
-
-
 
 if __name__ == "__main__":
     downloader = CourseraDownloader()
