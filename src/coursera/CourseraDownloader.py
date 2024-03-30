@@ -5,8 +5,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 
-import time, os
-import pyperclip, pyautogui, urllib.request
+import time, os, sys
+import urllib.request
 import CourseraDownloaderUtil
 
 
@@ -28,6 +28,7 @@ class CourseraDownloader:
         self.utility = Utility()
         self.video_name = ""
         self.default_saving_path = "./Downloads/"
+        self.week_saving_path = ""
         self.video_list = []
         self.index_file_name = ""
         self.webpage = ""
@@ -81,12 +82,12 @@ class CourseraDownloader:
         uls = self.driver.find_elements(By.TAG_NAME, "ul")
         uls = [ul for ul in uls if (PROCESS_VIDEO in ul.text or PROCESS_READ in ul.text)]
         # Skip the uls not related to class. 
-        uls_text = [ul.text for ul in uls]
         index = 0
-        while index < len(uls_text):
-            if uls_text[index].startswith('Module'):
-                break
-            index += 1
+        # uls_text = [ul.text for ul in uls]
+        # while index < len(uls_text):
+        #     if uls_text[index].startswith('Module'):
+        #         break
+        #     index += 1
         return uls[index:]
 
     def set_buttons_text(self):
@@ -119,9 +120,6 @@ class CourseraDownloader:
         time.sleep(0.2)
 
         self.process_download()
-
-        # self.driver.back()
-        # time.sleep(0.2)
 
     def process_ul(self, ul_index: int):
         uls = self.get_reading_and_video_content_in_week()
@@ -159,11 +157,15 @@ class CourseraDownloader:
 
             self.driver.back()
             time.sleep(0.5)
-
-    def process(self): 
-        # Initial the index .md file
-        self.initial_index_file()
-        self.set_buttons_text()
+    
+    def process_week(self, week_index: int):
+        weeks_li = self.get_weeks_li()
+        week = weeks_li[week_index]
+        week_text = week.text
+        self.week_saving_path = os.path.join(self.default_saving_path, week_text)
+        self.util.check_folder(self.week_saving_path)
+        week.click()
+        time.sleep(3)
 
         uls = self.get_reading_and_video_content_in_week()
         current_header = ""
@@ -180,6 +182,28 @@ class CourseraDownloader:
             current_header = header
             self.process_ul(index)
             index = index + 1
+    
+    def get_weeks_li(self):
+        uls = self.driver.find_elements(By.TAG_NAME, "ul")
+        week_ul = [ul for ul in uls if ('Course Material' in ul.text)][0]
+        weeks_li = week_ul.find_elements(By.TAG_NAME, "li")
+        weeks_li = [li for li in weeks_li if 'Week' in li.text and not ("\n" in li.text)]
+        return weeks_li
+
+    def process(self): 
+        # Initial the index .md file
+        self.initial_index_file()
+        self.set_buttons_text()
+
+        weeks_li = self.get_weeks_li()
+        
+        index_week = 0
+        while index_week < len(weeks_li):
+            self.process_week(index_week)
+            index_week = index_week + 1
+            
+
+        
 
         # uls = self.driver.find_elements(By.TAG_NAME, "ul")
         # weeks = [ul for ul in uls if ('Course Material' in ul.text)]
@@ -225,23 +249,42 @@ class CourseraDownloader:
     def process_download(self):
         download_items = self.get_download_items()
         index = self.util.find_higher_resolution([item.text for item in download_items])
+        current_saving_paths = ''
         while index < len(download_items):
             download_items = self.get_download_items()
             download_item = download_items[index]
             a = download_item.find_element(By.TAG_NAME, "a")
-            video_name = a.get_attribute("download")
+            object_name = a.get_attribute("download")
+            
+            if 'mp4' in object_name:
+                current_saving_paths = os.path.join(self.week_saving_path, object_name[:-4])
+                self.util.check_folder(current_saving_paths)
+            
+            object_path = os.path.join(current_saving_paths, object_name)
             video_url = a.get_attribute("href")
-            urllib.request.urlretrieve(video_url, os.path.join(self.default_saving_path, video_name))
-            print(f"Downloaded {video_name}")
+            urllib.request.urlretrieve(video_url, object_path)
+            print(f"Downloaded {object_name}")
+            with open(self.index_file_name, "a") as f:
+                    f.write(f"[{object_name}]({object_path})\n")
+            
             index = index + 1
         return;
 
 
 if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        _ = input(f"Please provide the webpage. Otherwise, we will use the default webpage: {WEB_PAGE}\n Press enter to confirm to use the default.")
+        if len(_) > 0:
+            WEB_PAGE = _
+    else:
+        WEB_PAGE = sys.argv[1]
+        
     downloader = CourseraDownloader()
-    downloader.open_page(WEB_PAGE)
-    _ = input("Please press enter once you have finished sign in")
-
-    courser_page = ""
-    downloader.process()
-    _ = input("Another pause ")
+    while len(WEB_PAGE) > 0:
+        downloader.open_page(WEB_PAGE)
+        _ = input("Please press enter once you have finished sign in")
+        downloader.process()
+        print(f"{WEB_PAGE} is done")
+        WEB_PAGE = ""
+        
+        WEB_PAGE = input("If you want to go with another class. Please input for another page.")

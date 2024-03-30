@@ -1,5 +1,5 @@
 from difflib import SequenceMatcher
-import re
+import re, os
 
 class CourseraDownloaderUtil:
     @staticmethod
@@ -36,3 +36,9 @@ class CourseraDownloaderUtil:
             return arr.index(max(arr))
         elif mode == "lowest":
             return arr.index(min(arr))
+        
+    @staticmethod
+    def check_folder(folder: str):
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        return folder
