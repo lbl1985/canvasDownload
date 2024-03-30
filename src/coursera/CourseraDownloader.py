@@ -181,36 +181,36 @@ class CourseraDownloader:
             self.process_ul(index)
             index = index + 1
 
-        uls = self.driver.find_elements(By.TAG_NAME, "ul")
-        weeks = [ul for ul in uls if ('Course Material' in ul.text)]
-        contents = self.get_content_in_week()
-        for index_content in range(len(contents)):
-            videos = self.get_video_in_content(index_content)
-            for index_video in range(len(videos)):
-                videos = self.get_video_in_content(index_content)
-                video = videos[index_video]
-                self.video_name = self.utility.get_video_name(video.text)
-                video.click()
-                time.sleep(3)
+        # uls = self.driver.find_elements(By.TAG_NAME, "ul")
+        # weeks = [ul for ul in uls if ('Course Material' in ul.text)]
+        # contents = self.get_content_in_week()
+        # for index_content in range(len(contents)):
+        #     videos = self.get_video_in_content(index_content)
+        #     for index_video in range(len(videos)):
+        #         videos = self.get_video_in_content(index_content)
+        #         video = videos[index_video]
+        #         self.video_name = self.utility.get_video_name(video.text)
+        #         video.click()
+        #         time.sleep(3)
 
-                buttons = self.driver.find_elements(By.TAG_NAME, "button")
-                download_buttons =[button for button in buttons if button.text == "Downloads"]
+        #         buttons = self.driver.find_elements(By.TAG_NAME, "button")
+        #         download_buttons =[button for button in buttons if button.text == "Downloads"]
 
-                while len(download_buttons) == 0:
-                    buttons = self.driver.find_elements(By.TAG_NAME, "button")
-                    download_buttons =[button for button in buttons if button.text == "Downloads"]
-                    time.sleep(2)
+        #         while len(download_buttons) == 0:
+        #             buttons = self.driver.find_elements(By.TAG_NAME, "button")
+        #             download_buttons =[button for button in buttons if button.text == "Downloads"]
+        #             time.sleep(2)
 
-                download_button = download_buttons[0]
-                download_button.click()
-                time.sleep(0.2)
+        #         download_button = download_buttons[0]
+        #         download_button.click()
+        #         time.sleep(0.2)
 
-                self.process_download()
+        #         self.process_download()
 
-                self.driver.back()
-                time.sleep(2)
-                index_video = index_video + 1
-            index_content = index_content + 1
+        #         self.driver.back()
+        #         time.sleep(2)
+        #         index_video = index_video + 1
+        #     index_content = index_content + 1
 
         return;
 
@@ -224,30 +224,18 @@ class CourseraDownloader:
 
     def process_download(self):
         download_items = self.get_download_items()
-        for index in range(len(download_items)):
+        index = self.util.find_higher_resolution([item.text for item in download_items])
+        while index < len(download_items):
             download_items = self.get_download_items()
             download_item = download_items[index]
-            if 'mp4' in download_item.text:
-                self.video_name = self.video_name + '_' + download_item.text.replace(" mp4", "")
-                pyperclip.copy(self.video_name)
-                self.download(download_item) # download the video operations
+            a = download_item.find_element(By.TAG_NAME, "a")
+            video_name = a.get_attribute("download")
+            video_url = a.get_attribute("href")
+            urllib.request.urlretrieve(video_url, os.path.join(self.default_saving_path, video_name))
+            print(f"Downloaded {video_name}")
             index = index + 1
         return;
 
-    def download(self, obj):
-        obj.click()
-        time.sleep(3)
-        
-        self.driver.switch_to.window(self.driver.window_handles[1])
-
-        video_url = self.driver.current_url
-        urllib.request.urlretrieve(video_url, os.path.join(self.default_saving_path, self.video_name + ".mp4"))
-
-        self.driver.close()
-        
-        self.driver.switch_to.window(self.driver.window_handles[0])
-        time.sleep(0.2)
-        return;
 
 if __name__ == "__main__":
     downloader = CourseraDownloader()
