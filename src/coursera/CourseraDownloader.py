@@ -6,7 +6,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 
 import time, os
-import pyperclip
+import pyperclip, pyautogui, urllib.request
 import CourseraDownloaderUtil
 
 
@@ -120,22 +120,30 @@ class CourseraDownloader:
 
         self.process_download()
 
-        self.driver.back()
-        time.sleep(0.2)
+        # self.driver.back()
+        # time.sleep(0.2)
 
     def process_ul(self, ul_index: int):
         uls = self.get_reading_and_video_content_in_week()
         ul = uls[ul_index]
         lis = ul.find_elements(By.TAG_NAME, "li")
         index = 0
-        process_type = ""
+       
         for index in range(len(lis)):
             uls = self.get_reading_and_video_content_in_week()
             ul = uls[ul_index]
 
             lis = ul.find_elements(By.TAG_NAME, "li")
             li = lis[index]
-            process_type = PROCESS_READ if PROCESS_READ in li.text else PROCESS_VIDEO
+
+            process_type = ""
+            if PROCESS_READ in li.text:
+                process_type = PROCESS_READ
+            elif PROCESS_VIDEO in li.text:
+                process_type = PROCESS_VIDEO
+            
+            if len(process_type) == 0:
+                continue
             
             li_text = li.text.split('\n')[0]
             with open(self.index_file_name, "a") as f:
@@ -200,7 +208,7 @@ class CourseraDownloader:
                 self.process_download()
 
                 self.driver.back()
-                time.sleep(0.2)
+                time.sleep(2)
                 index_video = index_video + 1
             index_content = index_content + 1
 
@@ -229,16 +237,14 @@ class CourseraDownloader:
     def download(self, obj):
         obj.click()
         time.sleep(3)
+        
         self.driver.switch_to.window(self.driver.window_handles[1])
-        video = self.driver.find_element(By.TAG_NAME, "video")
-        self.action.context_click(video)
-        time.sleep(0.5)
-        for i in range(4):
-            self.action.send_keys(Keys.ARROW_DOWN).perform()
-            time.sleep(0.2)
-        self.action.send_keys(Keys.RETURN).perform()
-        _ = input("Please press enter once finish downloading the video")
+
+        video_url = self.driver.current_url
+        urllib.request.urlretrieve(video_url, os.path.join(self.default_saving_path, self.video_name + ".mp4"))
+
         self.driver.close()
+        
         self.driver.switch_to.window(self.driver.window_handles[0])
         time.sleep(0.2)
         return;
