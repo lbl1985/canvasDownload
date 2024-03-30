@@ -39,6 +39,13 @@ class UtilTest(unittest.TestCase):
             '1-4.1. One-Tail Test for Mean\nVideo•\n. Duration: 5 minutes\n5 min\n1-4.2. Left-Tail Test for Mean in Excel\nVideo•\n. Duration: 3 minutes\n3 min\n1-4.3. Right-Tail Test for Mean in Excel\nVideo•\n. Duration: 6 minutes\n6 min\nLesson 1-4 Practice Quiz\nPractice Quiz•3 questions',
             '1-5.1. Testing the Proportion\nVideo•\n. Duration: 12 minutes\n12 min\n1-5.2. Left-Tail Test for Proportion in Excel\nVideo•\n. Duration: 5 minutes\n5 min\n1-5.3. Right-Tail Test for Proportion in Excel\nVideo•\n. Duration: 3 minutes\n3 min\n1-5.4. Two-Tail Test for Proportion in Excel\nVideo•\n. Duration: 5 minutes\n5 min\nLesson 1-5 Practice Quiz\nPractice Quiz•3 questions'
         ]
+        self.downloads_text = [
+            "Lecture Video (360p) mp4",
+            "Lecture Video (720p) mp4",
+            "Subtitles (English) WebVTT",
+            "Transcript (English) txt", 
+            "Module 1 Lesson 1 Slides pdf"
+        ]
             
     def tearDown(self):
         """tear down the test"""
@@ -77,3 +84,10 @@ class UtilTest(unittest.TestCase):
 
             # print(f"{test} ===> {h1_text}")
             arr = []
+
+    def test_find_higher_resolution(self):
+        """
+        test for find_higher_resolution
+        """
+        self.assertEqual(self.util.find_higher_resolution(self.downloads_text, "highest"), 1)
+        self.assertEqual(self.util.find_higher_resolution(self.downloads_text, "lowest"), 0)

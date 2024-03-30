@@ -257,6 +257,3 @@ if __name__ == "__main__":
     courser_page = ""
     downloader.process()
     _ = input("Another pause ")
-
-
-    

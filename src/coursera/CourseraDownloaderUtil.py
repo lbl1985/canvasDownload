@@ -1,4 +1,5 @@
 from difflib import SequenceMatcher
+import re
 
 class CourseraDownloaderUtil:
     @staticmethod
@@ -14,3 +15,24 @@ class CourseraDownloaderUtil:
             arr.append(ratio)
         max_index = arr.index(max(arr))
         return headers[max_index]
+    
+    @staticmethod
+    # downloads is list of string from download selenium elements' text format
+    # we should return the index for the mode specified index
+    def find_higher_resolution(downloads, mode = "highest"):
+        resolution_search = re.compile(r'(\d+)p(?=.*mp4)')
+        # downloads_text = [download.text for download in downloads]
+        default_value = 0 if mode == "highest" else 100000
+        arr = []
+        for download in downloads:
+            match = resolution_search.search(download)
+            if match:
+                resolution = int(match.group(1))
+                arr.append(resolution)
+            else:
+                arr.append(default_value)
+
+        if mode == "highest":
+            return arr.index(max(arr))
+        elif mode == "lowest":
+            return arr.index(min(arr))
