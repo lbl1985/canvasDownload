@@ -64,7 +64,12 @@ class CourseraDownloader:
         return items[-1]
 
     def initial_index_file(self):
-        self.index_file_name = os.path.join(self.default_saving_path, self.get_course_name() + ".md")
+        course_name = self.get_course_name()
+        course_name = self.util.get_clean_name(course_name)
+        self.course_saving_path = os.path.join(self.default_saving_path, course_name)
+        self.util.check_folder(self.course_saving_path)
+        self.index_file_name = os.path.join(self.course_saving_path, course_name + ".md")
+
         with open(self.index_file_name, "a") as f:
             course_name = self.get_course_name()
             week_number = self.get_week_number()
@@ -120,7 +125,7 @@ class CourseraDownloader:
 
         download_button = download_buttons[0]
         download_button.click()
-        time.sleep(0.2)
+        time.sleep(2)
 
         self.process_download()
 
@@ -162,10 +167,12 @@ class CourseraDownloader:
             time.sleep(0.5)
     
     def process_week(self, week_index: int):
+        self.set_buttons_text()
+
         weeks_li = self.get_weeks_li()
         week = weeks_li[week_index]
         week_text = week.text
-        self.week_saving_path = os.path.join(self.default_saving_path, week_text)
+        self.week_saving_path = os.path.join(self.course_saving_path, self.util.get_clean_name(week_text))
         self.util.check_folder(self.week_saving_path)
         week.click()
         time.sleep(3)
@@ -196,7 +203,6 @@ class CourseraDownloader:
     def process(self): 
         # Initial the index .md file
         self.initial_index_file()
-        self.set_buttons_text()
 
         weeks_li = self.get_weeks_li()
         
@@ -204,37 +210,6 @@ class CourseraDownloader:
         while index_week < len(weeks_li):
             self.process_week(index_week)
             index_week = index_week + 1
-
-        # uls = self.driver.find_elements(By.TAG_NAME, "ul")
-        # weeks = [ul for ul in uls if ('Course Material' in ul.text)]
-        # contents = self.get_content_in_week()
-        # for index_content in range(len(contents)):
-        #     videos = self.get_video_in_content(index_content)
-        #     for index_video in range(len(videos)):
-        #         videos = self.get_video_in_content(index_content)
-        #         video = videos[index_video]
-        #         self.video_name = self.utility.get_video_name(video.text)
-        #         video.click()
-        #         time.sleep(3)
-
-        #         buttons = self.driver.find_elements(By.TAG_NAME, "button")
-        #         download_buttons =[button for button in buttons if button.text == "Downloads"]
-
-        #         while len(download_buttons) == 0:
-        #             buttons = self.driver.find_elements(By.TAG_NAME, "button")
-        #             download_buttons =[button for button in buttons if button.text == "Downloads"]
-        #             time.sleep(2)
-
-        #         download_button = download_buttons[0]
-        #         download_button.click()
-        #         time.sleep(0.2)
-
-        #         self.process_download()
-
-        #         self.driver.back()
-        #         time.sleep(2)
-        #         index_video = index_video + 1
-        #     index_content = index_content + 1
 
         return;
 
@@ -255,9 +230,11 @@ class CourseraDownloader:
             download_item = download_items[index]
             a = download_item.find_element(By.TAG_NAME, "a")
             object_name = a.get_attribute("download")
+            object_name = self.util.get_clean_name(object_name[:-4]) + object_name[-4:]
             
             if 'mp4' in object_name:
-                current_saving_paths = os.path.join(self.week_saving_path, object_name[:-4])
+                folder_name = self.util.get_clean_name(object_name[:-4])
+                current_saving_paths = os.path.join(self.week_saving_path, folder_name)
                 self.util.check_folder(current_saving_paths)
             
             object_path = os.path.join(current_saving_paths, object_name)
@@ -265,7 +242,9 @@ class CourseraDownloader:
             urllib.request.urlretrieve(video_url, object_path)
             print(f"Downloaded {object_name}")
             with open(self.index_file_name, "a") as f:
-                    f.write(f"[{object_name}]({object_path})\n")
+                    object_name = self.util.get_clean_name(object_name[:-4])
+                    object_path_md = self.util.get_md_path(object_path)
+                    f.write(f"[{object_name}]({object_path_md})\n")
             
             index = index + 1
         return;
