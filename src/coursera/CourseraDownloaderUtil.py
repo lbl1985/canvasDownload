@@ -1,7 +1,15 @@
 from difflib import SequenceMatcher
 import re, os
+import urllib.request
 
 class CourseraDownloaderUtil:
+
+    def __init__(self):
+        self.skip_list = [
+            "Getting and Giving Help",
+            "Many of the"
+        ]
+
     @staticmethod
     def similar(a, b):
         return SequenceMatcher(None, a, b).ratio()
@@ -51,3 +59,36 @@ class CourseraDownloaderUtil:
     def get_clean_name(name: str):
         s = re.sub(r'[^\w\s-]', '', name).strip()
         return re.sub(r"(?<=\b)\w", lambda match: match.group(0).upper(), s).replace(' ', '_')
+    
+    def process_reading_elements(self, element, saving_path:str=".", path_level:int=2, is_test:bool=False):
+        if element.text in self.skip_list:
+            return ''        
+        elif element.tag_name in ['h1', 'h2', 'h3']:
+            return f"**{element.text}**\n"
+        elif element.tag_name == 'p':
+            if '.pdf' in element.text:
+                return self.process_pdf(element, saving_path, path_level, is_test)
+            return f"{element.text}\n"
+    
+    # Example saving_path = "./Downloads/Course/week1/"
+    def process_pdf(self, element, saving_path:str=".", path_level:int = 2, is_test:bool=False):
+        text = [file for file in element.text.split('\n') if '.pdf' in file][0]
+        
+        url = element.get_attribute('href')
+
+        object_name = self.get_clean_name(text[:-4]) + text[:-4]
+        object_path = os.path.join(saving_path, object_name)
+
+        if not is_test:
+            urllib.request.urlretrieve(url, object_path)
+        print(f"Downloaded {object_name}")
+
+        object_path_md = self.get_md_path(object_path, path_level)
+
+        return f"[{object_name}]({object_path_md})\n"
+
+    @staticmethod
+    def download_file(url:str, file_name:str, saving_path:str, path_level:int=2):
+
+        urllib.request.urlretrieve(url, file_name)
+        return file_name

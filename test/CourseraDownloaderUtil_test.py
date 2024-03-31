@@ -3,6 +3,13 @@ repo_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src'
 sys.path.append(repo_root)
 from CourseraDownloaderUtil import CourseraDownloaderUtil
 
+from selenium import webdriver
+from selenium.webdriver.edge.service import Service
+from selenium.webdriver.edge.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver import ActionChains
+
 class UtilTest(unittest.TestCase):
     def setUp(self):
         self.util = CourseraDownloaderUtil()
@@ -46,6 +53,9 @@ class UtilTest(unittest.TestCase):
             "Transcript (English) txt", 
             "Module 1 Lesson 1 Slides pdf"
         ]
+
+        self.opt = Options()
+        self.driver = webdriver.Edge(options=self.opt)
             
     def tearDown(self):
         """tear down the test"""
@@ -102,3 +112,35 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(self.util.get_clean_name("Lecture Video (720p) mp4"), "Lecture_Video_720p_Mp4")
         self.assertEqual(self.util.get_clean_name("Subtitles (English) WebVTT"), "Subtitles_English_WebVTT")
         self.assertEqual(self.util.get_clean_name("Welcome to Inferential and Predictive Statistics for Business!"), "Welcome_To_Inferential_And_Predictive_Statistics_For_Business")
+
+    # index = 9; print(f"index{index}: tag_name: {elements[index].tag_name}, text = {elements[index].text}")
+    # l = [f"index{index}, tag_name: {elements[index].tag_name}, text = {elements[index].text}" for index in range(len(elements))]
+    # print('\n'.join(l))
+    def test_process_overview(self):
+        webpage = "file://" + os.path.abspath(os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), '..', 'test', 'data', 'coursera_li_reading.html'))
+
+        self.driver.get(webpage)
+        viewers = self.driver.find_elements(By.CSS_SELECTOR, "div.css-1kgqbsw")
+        if len(viewers) == 1:
+            viewer = viewers[0]
+            elements = viewer.find_elements(By.XPATH, "./*")
+            for element in elements:
+                print(self.util.process_reading_elements(element, "./Downloads/Course/week1/", is_test=True))
+            # l = [f"index{index}, tag_name: {elements[index].tag_name}, text = {elements[index].text}" for index in range(len(elements))]
+            # print('\n'.join(l))
+
+    def test_process_reading(self):
+        webpage = "file://" + os.path.abspath(os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), '..', 'test', 'data', 'coursera_li_modual_reading.html'))
+
+        self.driver.get(webpage)
+        viewers = self.driver.find_elements(By.CSS_SELECTOR, "div.css-1kgqbsw")
+        if len(viewers) == 1:
+            viewer = viewers[0]
+            elements = viewer.find_elements(By.XPATH, "./*")
+            for element in elements:
+                print(self.util.process_reading_elements(element, "./Downloads/Course/week1/", is_test=True))
+
+if __name__ == '__main__':
+    unittest.main()
