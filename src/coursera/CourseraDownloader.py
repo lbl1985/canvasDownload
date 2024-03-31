@@ -27,7 +27,10 @@ class CourseraDownloader:
         self.opt = Options()
         self.utility = Utility()
         self.video_name = ""
+        # object saving path would be 
+        # default_saving_path/courser_saving_path/week_saving_path/video_name
         self.default_saving_path = "./Downloads/"
+        self.course_saving_path = ""
         self.week_saving_path = ""
         self.video_list = []
         self.index_file_name = ""
@@ -201,9 +204,6 @@ class CourseraDownloader:
         while index_week < len(weeks_li):
             self.process_week(index_week)
             index_week = index_week + 1
-            
-
-        
 
         # uls = self.driver.find_elements(By.TAG_NAME, "ul")
         # weeks = [ul for ul in uls if ('Course Material' in ul.text)]

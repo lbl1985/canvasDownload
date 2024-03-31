@@ -42,3 +42,12 @@ class CourseraDownloaderUtil:
         if not os.path.exists(folder):
             os.makedirs(folder)
         return folder
+    
+    @staticmethod
+    def get_md_path(path:str, spaces = 2):
+        return '/'.join(['.'] + path.split('/')[(1+spaces):])
+    
+    @staticmethod
+    def get_clean_name(name: str):
+        s = re.sub(r'[^\w\s-]', '', name).strip()
+        return re.sub(r"(?<=\b)\w", lambda match: match.group(0).upper(), s).replace(' ', '_')
