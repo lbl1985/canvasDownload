@@ -2,7 +2,8 @@ import unittest
 
 testmodules = [
     'get_video_download_link_test',
-    'CourseraDownloaderUtil_test'
+    'CourseraDownloaderUtil_test',
+    'coursera_reading_process_test'
     ]
 
 suite = unittest.TestSuite()
