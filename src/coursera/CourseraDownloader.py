@@ -41,9 +41,6 @@ class CourseraDownloader:
             os.mkdir(self.default_saving_path)
 
     def open_page(self, webpage: str):
-        # driver_path = "~/Downloads/edgedriver_mac64_m1/msedgedriver"  # Replace with the actual path to your Microsoft Edge WebDriver executable
-        # service = Service(driver_path)
-        # driver = webdriver.Edge(service=service, options=self.opt)
         self.driver = webdriver.Edge(options = self.opt)
         self.webpage = webpage
         self.driver.get(self.webpage)
@@ -109,10 +106,13 @@ class CourseraDownloader:
     def process_li_read(self):
         viewer = self.driver.find_elements(By.CSS_SELECTOR, "div.css-1kgqbsw")
         if len(viewer) == 1:
-            content = viewer[0].text
-            if len(content) > 0:
-                with open(self.index_file_name, "a") as f:
-                    f.write(f"{content}\n")
+            viewer = viewer[0]
+            elements = viewer.find_elements(By.XPATH, "./*")
+            for element in elements:
+                with open(self.index_file_name, 'a') as f:
+                    text = self.util.process_reading_elements(element, self.week_saving_path)
+                    if text is not None:
+                        f.write(text)
 
     def process_li_video(self):
         buttons = self.driver.find_elements(By.TAG_NAME, "button")
@@ -239,12 +239,13 @@ class CourseraDownloader:
             
             object_path = os.path.join(current_saving_paths, object_name)
             video_url = a.get_attribute("href")
+            print(f'Downloading {object_name}')
             urllib.request.urlretrieve(video_url, object_path)
             print(f"Downloaded {object_name}")
             with open(self.index_file_name, "a") as f:
                     object_name = self.util.get_clean_name(object_name[:-4])
                     object_path_md = self.util.get_md_path(object_path)
-                    f.write(f"[{object_name}]({object_path_md})\n")
+                    f.write(f"\n[{object_name}]({object_path_md})\n")
             
             index = index + 1
         return;
@@ -267,3 +268,16 @@ if __name__ == "__main__":
         WEB_PAGE = ""
         
         WEB_PAGE = input("If you want to go with another class. Please input for another page.")
+
+
+'''
+Knowledge for zsh
+# find all the files with Slides in the name
+find . -type f -iname "*Slides" 
+# find all the files with Slides in the name and rename them to pdf
+find . -type f -name "*Slides" -exec sh -c 'mv "$0" "${0}.pdf"' {} \; 
+# find all the files with xlsx in the name
+find . -type f -iname "*xlsx"
+# find all the files with xlsx in the name and rename them to .xlsx
+find . -type f -name "*xlsx" -exec sh -c 'mv "$0" "${0%xlsx}.xlsx"' {} \;
+'''

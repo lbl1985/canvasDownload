@@ -116,6 +116,7 @@ class CourseraDownloaderUtil:
                 object_path = os.path.join(saving_path, object_name)
 
                 if not is_test:
+                    print(f"Downloading {object_name}")
                     urllib.request.urlretrieve(url, object_path)
                 print(f"Downloaded {object_name}")
 
