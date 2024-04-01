@@ -12,7 +12,9 @@ import CourseraDownloaderUtil
 
 
 # WEB_PAGE = "https://www.coursera.org/learn/marketing-digital/home/week/2"
-WEB_PAGE = "https://www.coursera.org/learn/business-statistics/home/week/1"
+# WEB_PAGE = "https://www.coursera.org/learn/business-statistics/home/week/1"
+# WEB_PAGE = "https://www.coursera.org/learn/business-data/home/week/1"
+WEB_PAGE = "https://www.coursera.org/learn/infonomics-1/home/week/1"
 # WEB_PAGE = "file://" + os.path.abspath(os.path.join(os.path.abspath(__file__), '..', '..', '..', 'test', 'data', 'courseraWeekPage.html'))
 
 PROCESS_READ = "Reading"
@@ -39,9 +41,10 @@ class CourseraDownloader:
         self.util = CourseraDownloaderUtil.CourseraDownloaderUtil()
         if os.path.exists(self.default_saving_path) == False:
             os.mkdir(self.default_saving_path)
+        self.driver = webdriver.Edge(options = self.opt)
 
     def open_page(self, webpage: str):
-        self.driver = webdriver.Edge(options = self.opt)
+        
         self.webpage = webpage
         self.driver.get(self.webpage)
         self.action = ActionChains(self.driver)
@@ -153,7 +156,7 @@ class CourseraDownloader:
             
             li_text = li.text.split('\n')[0]
             with open(self.index_file_name, "a") as f:
-                f.write(f"#### {li_text}\n")
+                f.write(f"### {li_text}\n")
 
             li.click()
             time.sleep(0.5)
@@ -184,11 +187,10 @@ class CourseraDownloader:
             uls = self.get_reading_and_video_content_in_week()
             ul = uls[index]
             ul_text = ul.text.split('\n')[0]
-            header = self.util.find_header(ul_text, self.buttons_text)
+            header = self.util.find_header(ul_text, self.buttons_text) 
             if header != current_header:
                 with open(self.index_file_name, "a") as f:
-                    f.write(f"## {header}\n")
-                    f.write(f"### {ul_text}\n")
+                    f.write(f"## {ul_text}\n")
             current_header = header
             self.process_ul(index)
             index = index + 1
@@ -230,10 +232,15 @@ class CourseraDownloader:
             download_item = download_items[index]
             a = download_item.find_element(By.TAG_NAME, "a")
             object_name = a.get_attribute("download")
-            object_name = self.util.get_clean_name(object_name[:-4]) + object_name[-4:]
+            file_name, ext = os.path.splitext(object_name)
+            
+            if len(ext) == 0 and object_name.endswith('Slides'):
+                ext = '.pdf'
+
+            object_name = self.util.get_clean_name(file_name) + ext
             
             if 'mp4' in object_name:
-                folder_name = self.util.get_clean_name(object_name[:-4])
+                folder_name, _ = os.path.splitext(object_name)
                 current_saving_paths = os.path.join(self.week_saving_path, folder_name)
                 self.util.check_folder(current_saving_paths)
             
@@ -243,9 +250,9 @@ class CourseraDownloader:
             urllib.request.urlretrieve(video_url, object_path)
             print(f"Downloaded {object_name}")
             with open(self.index_file_name, "a") as f:
-                    object_name = self.util.get_clean_name(object_name[:-4])
+                    file_name, _ = os.path.splitext(object_name)
                     object_path_md = self.util.get_md_path(object_path)
-                    f.write(f"\n[{object_name}]({object_path_md})\n")
+                    f.write(f"\n[{file_name}]({object_path_md})\n")
             
             index = index + 1
         return;
