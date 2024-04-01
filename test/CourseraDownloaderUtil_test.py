@@ -56,7 +56,20 @@ class UtilTest(unittest.TestCase):
 
         self.opt = Options()
         self.driver = webdriver.Edge(options=self.opt)
-            
+
+        self.test_data_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'test', 'data')
+        self.overview_file_gt = os.path.join(self.test_data_folder, 'overview.md')
+        self.reading_file_gt = os.path.join(self.test_data_folder, 'reading.md')
+
+        self.temp_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'test', 'temp')
+        CourseraDownloaderUtil.check_folder(self.temp_folder)
+        self.overview_file = os.path.join(self.temp_folder, 'overview.md')
+        # if os.path.exists(self.overview_file):
+        #     os.remove(self.overview_file)
+        self.reading_file = os.path.join(self.temp_folder, 'reading.md')
+        if os.path.exists(self.reading_file):
+            os.remove(self.reading_file)
+
     def tearDown(self):
         """tear down the test"""
         pass
@@ -90,9 +103,6 @@ class UtilTest(unittest.TestCase):
                 self.assertEqual(h1_text, "Lesson 1-4: One-Tail Test for Mean")
             elif test == "1-5.1. Testing the Proportion":
                 self.assertEqual(h1_text, "Lesson 1-5: Testing the Proportion")
-
-
-            # print(f"{test} ===> {h1_text}")
             arr = []
 
     def test_find_higher_resolution(self):
@@ -126,9 +136,13 @@ class UtilTest(unittest.TestCase):
             viewer = viewers[0]
             elements = viewer.find_elements(By.XPATH, "./*")
             for element in elements:
-                print(self.util.process_reading_elements(element, "./Downloads/Course/week1/", is_test=True))
-            # l = [f"index{index}, tag_name: {elements[index].tag_name}, text = {elements[index].text}" for index in range(len(elements))]
-            # print('\n'.join(l))
+                with open(self.overview_file, 'a') as f:
+                    f.write(self.util.process_reading_elements(element, "./Downloads/Course/week1/", is_test=True))
+        with open(self.overview_file_gt, 'r') as file1, open(self.overview_file, 'r') as file2:
+            contents_gt = file1.read()
+            contents = file2.read()
+            self.assertEqual(contents_gt, contents)
+            
 
     def test_process_reading(self):
         webpage = "file://" + os.path.abspath(os.path.join(
@@ -140,7 +154,12 @@ class UtilTest(unittest.TestCase):
             viewer = viewers[0]
             elements = viewer.find_elements(By.XPATH, "./*")
             for element in elements:
-                print(self.util.process_reading_elements(element, "./Downloads/Course/week1/", is_test=True))
+                with open(self.reading_file, 'a') as f:
+                    f.write(self.util.process_reading_elements(element, "./Downloads/Course/week1/", is_test=True))
+        with open(self.reading_file_gt, 'r') as file1, open(self.reading_file, 'r') as file2:
+            contents_gt = file1.read()
+            contents = file2.read()
+            self.assertEqual(contents_gt, contents)
 
 if __name__ == '__main__':
     unittest.main()
