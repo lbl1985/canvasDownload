@@ -14,7 +14,8 @@ import CourseraDownloaderUtil
 # WEB_PAGE = "https://www.coursera.org/learn/marketing-digital/home/week/2"
 # WEB_PAGE = "https://www.coursera.org/learn/business-statistics/home/week/1"
 # WEB_PAGE = "https://www.coursera.org/learn/business-data/home/week/1"
-WEB_PAGE = "https://www.coursera.org/learn/infonomics-1/home/week/1"
+# WEB_PAGE = "https://www.coursera.org/learn/infonomics-1/home/week/1"
+WEB_PAGE = "https://www.coursera.org/learn/project-execution-control/home/week/1"
 # WEB_PAGE = "file://" + os.path.abspath(os.path.join(os.path.abspath(__file__), '..', '..', '..', 'test', 'data', 'courseraWeekPage.html'))
 
 PROCESS_READ = "Reading"
@@ -128,7 +129,7 @@ class CourseraDownloader:
 
         download_button = download_buttons[0]
         download_button.click()
-        time.sleep(2)
+        time.sleep(3)
 
         self.process_download()
 
@@ -232,6 +233,9 @@ class CourseraDownloader:
             download_item = download_items[index]
             a = download_item.find_element(By.TAG_NAME, "a")
             object_name = a.get_attribute("download")
+            if len(object_name) == 0: # skip empty download link
+                index = index + 1
+                continue
             file_name, ext = os.path.splitext(object_name)
             
             if len(ext) == 0 and object_name.endswith('Slides'):
@@ -247,7 +251,13 @@ class CourseraDownloader:
             object_path = os.path.join(current_saving_paths, object_name)
             video_url = a.get_attribute("href")
             print(f'Downloading {object_name}')
-            urllib.request.urlretrieve(video_url, object_path)
+            try:
+                urllib.request.urlretrieve(video_url, object_path)
+            except Exception as e:
+                print(f"Error in downloading {object_name}, {video_url}, {object_path}")
+                print(e)
+                continue
+            
             print(f"Downloaded {object_name}")
             with open(self.index_file_name, "a") as f:
                     file_name, _ = os.path.splitext(object_name)
