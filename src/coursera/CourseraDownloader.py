@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 
-import time, os, sys
+import time, os, sys, json
 import urllib.request
 import CourseraDownloaderUtil
 
@@ -269,17 +269,38 @@ class CourseraDownloader:
 
 
 if __name__ == "__main__":
+    downloader = CourseraDownloader()
+    init = True
     if len(sys.argv) == 1:
         _ = input(f"Please provide the webpage. Otherwise, we will use the default webpage: {WEB_PAGE}\n Press enter to confirm to use the default.")
         if len(_) > 0:
             WEB_PAGE = _
-    else:
-        WEB_PAGE = sys.argv[1]
-        
-    downloader = CourseraDownloader()
+    elif len(sys.argv) == 2:
+        if downloader.util.is_url(sys.argv[1]):
+            WEB_PAGE = sys.argv[1]
+        else:
+            if os.path.exists(sys.argv[1]) and os.path.splitext(sys.argv[1])[1] == '.json':
+                web_pages = json.load(open(sys.argv[1]))
+                for page in web_pages:
+                    WEB_PAGE = page
+                    if (WEB_PAGE == web_pages[-1]): # last course break to get into regular cycle
+                        break
+                    print(f"Processing {WEB_PAGE}")
+                    downloader.open_page(WEB_PAGE)
+                    time.sleep(5)
+                    if init:
+                        _ = input("Please press enter once you have finished sign in")
+                        init = False
+                    downloader.process()
+                    print(f"{WEB_PAGE} is done")
+
     while len(WEB_PAGE) > 0:
+        print(f"Processing {WEB_PAGE}")
         downloader.open_page(WEB_PAGE)
-        _ = input("Please press enter once you have finished sign in")
+        time.sleep(3)
+        if init:
+            _ = input("Please press enter once you have finished sign in")
+            init = False
         downloader.process()
         print(f"{WEB_PAGE} is done")
         WEB_PAGE = ""

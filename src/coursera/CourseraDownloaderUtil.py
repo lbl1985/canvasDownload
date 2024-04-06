@@ -10,13 +10,14 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 
 class CourseraDownloaderUtil:
-
+    url_pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+    
     def __init__(self):
         self.skip_list = [
             "Getting and Giving Help",
             "Many of the"
         ]
-
+        
     @staticmethod
     def similar(a, b):
         return SequenceMatcher(None, a, b).ratio()
@@ -66,6 +67,9 @@ class CourseraDownloaderUtil:
     def get_clean_name(name: str):
         s = re.sub(r'[^\w\s-]', '', name).strip()
         return re.sub(r"(?<=\b)\w", lambda match: match.group(0).upper(), s).replace(' ', '_')
+    
+    def is_url(self, string: str):
+        return bool(self.url_pattern.match(string))
     
     def process_reading_elements(self, element, saving_path:str=".", path_level:int=2, is_test:bool=False):
         if element.text in self.skip_list:

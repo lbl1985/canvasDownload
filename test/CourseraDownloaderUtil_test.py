@@ -100,5 +100,10 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(self.util.get_clean_name("Subtitles (English) WebVTT"), "Subtitles_English_WebVTT")
         self.assertEqual(self.util.get_clean_name("Welcome to Inferential and Predictive Statistics for Business!"), "Welcome_To_Inferential_And_Predictive_Statistics_For_Business")
 
+    def test_is_url(self):
+        self.assertTrue(self.util.is_url("https://www.coursera.org/learn/inferential-statistics-intro/home/welcome"))
+        self.assertFalse(self.util.is_url("Welcome to Inferential and Predictive Statistics for Business!"))
+        self.assertFalse(self.util.is_url("./download_list.json"))
+
 if __name__ == '__main__':
     unittest.main()
