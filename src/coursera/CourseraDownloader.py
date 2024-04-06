@@ -15,7 +15,8 @@ import CourseraDownloaderUtil
 # WEB_PAGE = "https://www.coursera.org/learn/business-statistics/home/week/1"
 # WEB_PAGE = "https://www.coursera.org/learn/business-data/home/week/1"
 # WEB_PAGE = "https://www.coursera.org/learn/infonomics-1/home/week/1"
-WEB_PAGE = "https://www.coursera.org/learn/project-execution-control/home/week/1"
+# WEB_PAGE = "https://www.coursera.org/learn/project-execution-control/home/week/1"
+WEB_PAGE = "https://www.coursera.org/learn/strategy-business/supplement/Y3DSb/instructions-for-case-study-analysis-the-soft-drink-industry"
 # WEB_PAGE = "file://" + os.path.abspath(os.path.join(os.path.abspath(__file__), '..', '..', '..', 'test', 'data', 'courseraWeekPage.html'))
 
 PROCESS_READ = "Reading"
@@ -156,14 +157,22 @@ class CourseraDownloader:
                 continue
 
             li_text = li.text.split('\n')[0]
-            if 'Honor' in li_text: # skip the honor related contents
-                continue
+            # if 'Honor' in li_text: # skip the honor related contents
+            #     continue
 
             with open(self.index_file_name, "a") as f:
                 f.write(f"### {li_text}\n")
 
             li.click()
             time.sleep(0.5)
+
+            honor = self.driver.find_elements(By.CSS_SELECTOR, "div.honors-modal-content")
+            if len(honor) > 0:
+                buttons = honor[0].find_elements(By.CSS_SELECTOR, "button")
+                continue_button = [button for button in buttons if button.text == "Continue"]
+                if len(continue_button) == 1:
+                    continue_button[0].click()
+                    time.sleep(0.5)
 
             if process_type == PROCESS_READ:
                 self.process_li_read()
