@@ -154,8 +154,11 @@ class CourseraDownloader:
             
             if len(process_type) == 0:
                 continue
-            
+
             li_text = li.text.split('\n')[0]
+            if 'Honor' in li_text: # skip the honor related contents
+                continue
+
             with open(self.index_file_name, "a") as f:
                 f.write(f"### {li_text}\n")
 
