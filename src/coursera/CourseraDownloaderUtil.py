@@ -61,7 +61,11 @@ class CourseraDownloaderUtil:
     
     @staticmethod
     def get_md_path(path:str, spaces = 2):
-        return '/'.join(['.'] + path.split('/')[(1+spaces):])
+        normalized_path = os.path.normpath(path)
+        if not normalized_path.startswith('.'):
+            normalized_path = os.path.join('.', normalized_path)
+        splits = normalized_path.split(os.sep)
+        return '/'.join(['.'] + splits[(1+spaces):])
     
     @staticmethod
     def get_clean_name(name: str):

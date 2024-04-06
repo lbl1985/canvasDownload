@@ -90,9 +90,17 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(self.util.find_higher_resolution(self.downloads_text, "lowest"), 0)
 
     def test_get_md_path(self):
+        self.assertEqual(self.util.get_md_path("./Downloads\\Inferential\\Week1\\Business\\WelcometoInferential\\subtitles-en.vtt"), "./Week1/Business/WelcometoInferential/subtitles-en.vtt")
+        
         self.assertEqual(self.util.get_md_path("./Downloads/Inferential/Week1/Business/WelcometoInferential/subtitles-en.vtt"), "./Week1/Business/WelcometoInferential/subtitles-en.vtt")
         self.assertEqual(self.util.get_md_path("./Downloads/Inferential/Week1/Business/WelcometoInferential/subtitles-en.vtt", 1), "./Inferential/Week1/Business/WelcometoInferential/subtitles-en.vtt")
         self.assertEqual(self.util.get_md_path("./Downloads/Inferential/Week1/Business/WelcometoInferential/subtitles-en.vtt", 0), "./Downloads/Inferential/Week1/Business/WelcometoInferential/subtitles-en.vtt")
+        self.assertEqual(self.util.get_md_path("./Downloads/Inferential/Week1/Business/WelcometoInferential/subtitles-en.vtt", 0), "./Downloads/Inferential/Week1/Business/WelcometoInferential/subtitles-en.vtt")
+        
+        self.assertEqual(self.util.get_md_path("./Downloads\\Inferential\\Week1\\Business\\WelcometoInferential\\subtitles-en.vtt", 1), "./Inferential/Week1/Business/WelcometoInferential/subtitles-en.vtt")
+        self.assertEqual(self.util.get_md_path("./Downloads\\Inferential\\Week1\\Business\\WelcometoInferential\\subtitles-en.vtt", 0), "./Downloads/Inferential/Week1/Business/WelcometoInferential/subtitles-en.vtt")
+        self.assertEqual(self.util.get_md_path("./Downloads\\Inferential\\Week1\\Business\\WelcometoInferential\\subtitles-en.vtt", 0), "./Downloads/Inferential/Week1/Business/WelcometoInferential/subtitles-en.vtt")
+        self.assertEqual(self.util.get_md_path("./Downloads\\Inferential\\Week1\\Business\\WelcometoInferential\\subtitles-en.vtt", 0), "./Downloads/Inferential/Week1/Business/WelcometoInferential/subtitles-en.vtt")
     
     def test_get_clean_name(self):
         self.assertEqual(self.util.get_clean_name("Lecture Video (360p) mp4"), "Lecture_Video_360p_Mp4")

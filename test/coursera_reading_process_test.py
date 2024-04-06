@@ -17,8 +17,8 @@ class UtilTest(unittest.TestCase):
         self.driver = webdriver.Edge(options=self.opt)
 
         self.test_data_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'test', 'data')
-        self.overview_file_gt = os.path.join(self.test_data_folder, 'overview.md')
-        self.reading_file_gt = os.path.join(self.test_data_folder, 'reading.md')
+        self.overview_file_gt = os.path.join(self.test_data_folder, 'overview_win.md') if os.name == 'nt' else os.path.join(self.test_data_folder, 'overview.md')
+        self.reading_file_gt = os.path.join(self.test_data_folder, 'reading_win.md') if os.name == 'nt' else os.path.join(self.test_data_folder, 'reading.md')
 
         self.temp_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'test', 'temp')
         CourseraDownloaderUtil.check_folder(self.temp_folder)
