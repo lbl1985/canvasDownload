@@ -11,13 +11,7 @@ import CourseraDownloaderUtil
 
 
 
-# WEB_PAGE = "https://www.coursera.org/learn/marketing-digital/home/week/2"
-# WEB_PAGE = "https://www.coursera.org/learn/business-statistics/home/week/1"
-# WEB_PAGE = "https://www.coursera.org/learn/business-data/home/week/1"
-# WEB_PAGE = "https://www.coursera.org/learn/infonomics-1/home/week/1"
-# WEB_PAGE = "https://www.coursera.org/learn/project-execution-control/home/week/1"
-WEB_PAGE = "https://www.coursera.org/learn/strategy-business/supplement/Y3DSb/instructions-for-case-study-analysis-the-soft-drink-industry"
-# WEB_PAGE = "file://" + os.path.abspath(os.path.join(os.path.abspath(__file__), '..', '..', '..', 'test', 'data', 'courseraWeekPage.html'))
+WEB_PAGE = "https://www.coursera.org/learn/country-level-economics/home/week/1"
 
 PROCESS_READ = "Reading"
 PROCESS_VIDEO = "Video"
