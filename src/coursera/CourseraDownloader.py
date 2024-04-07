@@ -114,7 +114,7 @@ class CourseraDownloader:
             viewer = viewer[0]
             elements = viewer.find_elements(By.XPATH, "./*")
             for element in elements:
-                with open(self.index_file_name, 'a') as f:
+                with open(self.index_file_name, 'a', encoding='utf-8', errors='ignore') as f:
                     text = self.util.process_reading_elements(element, self.week_saving_path)
                     if text is not None:
                         f.write(text)
