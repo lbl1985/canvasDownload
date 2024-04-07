@@ -123,6 +123,11 @@ class CourseraDownloader:
         buttons = self.driver.find_elements(By.TAG_NAME, "button")
         download_buttons =[button for button in buttons if button.text == "Downloads"]
 
+        locks = self.driver.find_elements(By.CSS_SELECTOR, "div.rc-ItemLockedCover")
+        if len(locks) > 0:
+            print("The video is locked")
+            return
+
         while len(download_buttons) == 0:
             buttons = self.driver.find_elements(By.TAG_NAME, "button")
             download_buttons =[button for button in buttons if button.text == "Downloads"]
