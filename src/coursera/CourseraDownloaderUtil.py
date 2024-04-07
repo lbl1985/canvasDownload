@@ -1,5 +1,5 @@
 from difflib import SequenceMatcher
-import re, os
+import re, os, time
 import urllib.request
 
 from selenium import webdriver
@@ -57,6 +57,7 @@ class CourseraDownloaderUtil:
     def check_folder(folder: str):
         if not os.path.exists(folder):
             os.makedirs(folder)
+            time.sleep(1)
         return folder
     
     @staticmethod

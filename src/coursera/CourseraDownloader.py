@@ -5,7 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver import ActionChains
 
-import time, os, sys, json
+import time, os, sys, json, math
 import urllib.request
 import CourseraDownloaderUtil
 
@@ -239,6 +239,7 @@ class CourseraDownloader:
         download_items = self.get_download_items()
         index = self.util.find_higher_resolution([item.text for item in download_items])
         current_saving_paths = ''
+        truncate = 0
         while index < len(download_items):
             download_items = self.get_download_items()
             download_item = download_items[index]
@@ -252,7 +253,17 @@ class CourseraDownloader:
             if len(ext) == 0 and object_name.endswith('Slides'):
                 ext = '.pdf'
 
-            object_name = self.util.get_clean_name(file_name) + ext
+            clean_name = self.util.get_clean_name(file_name)
+            if truncate != 0:
+                # clean the previous folder first
+                previous_clean_name = clean_name[:math.floor(len(clean_name) / pow(2, truncate - 1))]
+                if os.path.exists(os.path.join(self.week_saving_path, previous_clean_name)):
+                    os.rmdir(os.path.join(self.week_saving_path, previous_clean_name))
+                # setup new clean name
+                truncate_len = math.floor(len(clean_name) / pow(2, truncate))
+                clean_name = clean_name[:truncate_len]
+            
+            object_name = clean_name + ext
             
             if 'mp4' in object_name:
                 folder_name, _ = os.path.splitext(object_name)
@@ -267,7 +278,14 @@ class CourseraDownloader:
             except Exception as e:
                 print(f"Error in downloading {object_name}, {video_url}, {object_path}")
                 print(e)
+                if 'No such file or directory' in str(e):
+                    truncate = truncate + 1
+                    print(f"object name too long, set up truncate to {truncate} ")
+
                 continue
+
+            if truncate != 0:
+                truncate = 0 # reset the truncate once download successfully
             
             print(f"Downloaded {object_name}")
             with open(self.index_file_name, "a") as f:
