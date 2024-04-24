@@ -231,8 +231,6 @@ class CourseraDownloader:
         tags = self.driver.find_elements(By.TAG_NAME, "ul")
         download_list = [tag for tag in tags if ('Video' in tag.text)] # find the download button
         download_ul = download_list[-1]
-        download_ul.click()
-        time.sleep(0.2)
         return download_ul.find_elements(By.TAG_NAME, "li")
 
     def process_download(self):
