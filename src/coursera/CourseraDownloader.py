@@ -121,12 +121,18 @@ class CourseraDownloader:
         if len(locks) > 0:
             print("The video is locked")
             return
-
-        while len(download_buttons) == 0:
+        
+        counter = 0
+        while len(download_buttons) == 0 and counter < 5:
             buttons = self.driver.find_elements(By.TAG_NAME, "button")
             download_buttons =[button for button in buttons if button.text == "Downloads"]
             time.sleep(2)
+            counter = counter + 1
 
+        if len(download_buttons) == 0:
+            print("No download button found")
+            return
+        
         download_button = download_buttons[0]
         download_button.click()
         time.sleep(3)
