@@ -17,4 +17,12 @@ Please do not use conda install. Conda version would not install the necessary b
   Where the courses.json contains a list of strings, each string is the address to the Coursera class. 
 * Input your Coursera username and password. 
 * Once signed-in and to your class home page. Press Enter in the command line. 
-* The download would triggered automatically. You could monitor the behavior in your command line area. 
+* The download would be triggered automatically. You could monitor the behavior in your command line area. 
+
+# Usage for the downloads
+The major benefits of using the tool are not only about automatic downloading, but also using markdown files to organize the downloaded contents. 
+
+When we download the files, the corresponding information such as the the Course name, Modual name, week topic and extra information, etc.. The markdown file and the corresponding .mp4 video files are all saved in relative folder paths. If in Visual Code, users could directly click on the hyper link to watch the videos. 
+
+# Declaration
+All operations in software are allowed by Coursera. The program author is free of any related liabilities related to the usage of the software. The users should take full responsibilities. Meanwhile, the goal for the software is to help users ease up the burden of saving materials for them to go over offline or for later references. Please do not copy or propogate the information for whatever unlawful behaviors. 
