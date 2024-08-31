@@ -44,16 +44,25 @@ class NationalParkChecker:
         for date in self.dates:
             date_obj = datetime.datetime.strptime(date, "%Y-%m-%d")
             print(f"Checking {date}")
-            date_picker = self.driver.find_elements(By.CSS_SELECTOR, "div.date-segment")[0]
-            date_picker.click()
+            segments = self.driver.find_elements(By.CSS_SELECTOR, "div.date-segment")
+            while not (len(segments) == 5):
+                segments = self.driver.find_elements(By.CSS_SELECTOR, "div.date-segment")
+                print(f"Waiting for the page to load because segment size is {len(segments)}")
+                time.sleep(1)
+                
+            segments[0].click()
             self.action.send_keys(date_obj.strftime("%m")).perform()
-            # self.action.send_keys(Keys.TAB).perform()
+
+            segments[2].click()
             self.action.send_keys(date_obj.strftime("%d")).perform()
-            # self.action.send_keys(Keys.TAB).perform()
+
+            segments[4].click()
             self.action.send_keys(date_obj.strftime("%Y")).perform()
+
             self.action.send_keys(Keys.RETURN).perform()
             time.sleep(1)
             self.check_entry_window(date)
+            time.sleep(3)
 
     def check_entry_window(self, date):
         times = self.driver.find_elements(By.CSS_SELECTOR, "div.sarsa-inline.xs.y-center.left")[0].find_element(By.TAG_NAME, "div").find_elements(By.XPATH, "./*")
@@ -68,8 +77,9 @@ class NationalParkChecker:
 if __name__ == "__main__":
     park = NationalParkChecker()
     park.open_page(WEB_PAGE)
-    park.check_dates_available(["2024-09-01", "2024-09-02"])
+    
     while True:
-        time.sleep(60)
         park.check_dates_available(["2024-09-01", "2024-09-02"])
+        time.sleep(250)
+        park.driver.refresh()
     print("Done!")
